@@ -101,7 +101,7 @@ public class Begin {
                             if (inputNumber > k)
                                 System.out.println("Liczba jest zbyt duża!!Nie ma tyle kolorów w grze.");
                             else {
-                                k = inputNumber;
+                                l = inputNumber;
                                 shouldBreak = true;
                             }
                         }
