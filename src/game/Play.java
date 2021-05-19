@@ -13,30 +13,36 @@ public class Play {
     int inputNumber;
     boolean valid;
 
-    boolean check_for_arithmetical(Integer[] pola, int m){
-        int n = pola.length;
-        double Sm = n/(m-1.0);
-        int kol;
-        boolean won = false;
-        for (int S=1; S<Sm; S++)
-            for (int i=0; i+(m-1)*S<n; i++) if (pola[i] > -1){
-                valid = true;
-                kol = pola[i];
-                for (int x=0; x<m; x++) if (pola[i+x*S] != kol) valid = false;
-                if (valid) won = true;
+    boolean check_for_arithmetical(ArrayList<Integer> pola, int m){
+        int n = pola.size(), d;
+        boolean arithm;
+        for (int i=0; i<n-1; i++) for (int j=i+1; j<n; j++){
+            d = pola.get(j)-pola.get(i);
+            arithm=true;
+            for (int x=1; x<m-1; x++) if (!pola.contains(pola.get(j)+d*x)){
+                arithm=false;
+                break;
             }
-        return won;
+            if (arithm) return true;
+        }
+        return false;
     }
 
-    boolean check_game_for_arithmetical(List<List<Integer>> game_board, int m, int k){
-        List<List<Integer>> game_sort = game_board;
-        List<Integer> game_color = new ArrayList<>();
+    boolean check_game_for_arithmetical(ArrayList<ArrayList<Integer>> game_board, int m, int k){
+        ArrayList<ArrayList<Integer>> game_sort = new ArrayList<>();
+        ArrayList<Integer> game_color;
+        game_sort.addAll(game_board);
         game_sort.sort(Comparator.comparing(o -> o.get(0)));
+        boolean inside;
         for (int cgfa=0; cgfa<k; cgfa++){
-            for (int s=0; s<game_sort.size(); s++)
-                if (game_sort.get(s).get(1)==cgfa) game_color.add(game_sort.get(s).get(0));
-            if (game_color.size()<3) continue;
-            if (check_for_arithmetical(game_color.toArray(new Integer[game_color.size()]), m)) return true;
+            inside=false;
+            for (ArrayList<Integer> s:game_sort) if (s.get(1)==cgfa) inside=true;
+            if (inside){
+                game_color = new ArrayList<>();
+                for (ArrayList<Integer> s:game_sort) if (s.get(1)==cgfa) game_color.add(s.get(0));
+                if (game_color.size()<3) continue;
+                if (check_for_arithmetical(game_color, m)) return true;
+            }
         }
         return false;
     }
@@ -45,18 +51,20 @@ public class Play {
         table="";
         String fore;
         for (int i=0; i<G.n; i++){
-            if (pola[i] == -1) table = table+"[ ]";
+            if (pola[i] == -1) table += "[ ]";
             else {
                 fore = (tla[pola[i]]-16)%36<18?"231":"16";
-                table = table+"[\033[38;5;"+fore+";48;5;"+Integer.toString(tla[pola[i]])+"m"+Integer.toString(pola[i]+1)+"\033[0m]";
+                table += "[\033[38;5;"+fore+";48;5;"+Integer.toString(tla[pola[i]])+"m"+Integer.toString(pola[i]+1)+"\033[0m]";
             }
         }
         return table;
     }
 
-    List<List<Integer>> check_game(List<List<Integer>> game_board, int move, int m, int l, int k){
-        List<List<Integer>> out_list = new ArrayList<>(), game_ch = new ArrayList<>();
-        List<Integer> out_row = new ArrayList<>();
+    ArrayList<ArrayList<Integer>> check_game(ArrayList<ArrayList<Integer>> game_board,
+                                             int move, int m, int l, int k){
+        ArrayList<ArrayList<Integer>> out_list = new ArrayList<>(),
+                game_ch = new ArrayList<>(), gameX, gameX_ch;
+        ArrayList<Integer> out_row = new ArrayList<>();
         if (check_game_for_arithmetical(game_board, m, k)){
             out_row.add(1);
             for (int i=0; i<k+1; i++) out_row.add(-1);
@@ -70,28 +78,33 @@ public class Play {
             return out_list;
         }
 
-        for (int i=0; i<game_board.size(); i++) if (game_board.get(i).get(0)==0){
+        for (int i=0; i<game_board.size(); i++) if (game_board.get(i).get(0)==-1){
             game_ch = new ArrayList<>();
-            game_ch.add(new ArrayList<>());
-            for (int j=0; j<k+2; j++) game_ch.get(0).add(-1);
-            game_ch.get(0).set(1, i);
+            out_row = new ArrayList<>();
+            for (int j=0; j<k+2; j++) {
+                if (j==1) out_row.add(i);
+                else out_row.add(-1);
+            }
+            game_ch.add(out_row);
             int n_prim = 1, how_many_wins = 0;
             for (int color_ch=0; color_ch<k; color_ch++){
-                game_ch.get(0).set(color_ch+2, n_prim+1);
-                List<List<Integer>> gameX = game_board;
-                gameX.set(i, new ArrayList<>(Arrays.asList(i, color_ch)));
-                List<List<Integer>> gameX_ch = check_game(gameX, move+1, m, l, k);
+                game_ch.get(0).set(color_ch+2, n_prim);
+                gameX = new ArrayList<>();
+                out_row = new ArrayList<>(Arrays.asList(i, color_ch));
+                for (int j=0; j<game_board.size(); j++){
+                    if (i==j) gameX.add(out_row);
+                    else gameX.add(game_board.get(j));
+                }
+                gameX_ch = check_game(gameX, move+1, m, l, k);
                 int act;
-                for (int j=0; j<gameX_ch.size(); j++){
-                    for (int h=2; h<k+2; h++){
-                        act = gameX_ch.get(j).get(h);
-                        if (act!=-1) gameX_ch.get(j).set(h, act+n_prim);
-                    }
+                for (List<Integer> j:gameX_ch) for (int h=2; h<k+2; h++){
+                    act = j.get(h);
+                    if (act!=-1) j.set(h, act+n_prim);
                 }
                 n_prim += gameX_ch.size();
                 game_ch.addAll(gameX_ch);
                 how_many_wins += gameX_ch.get(0).get(0);
-                if(how_many_wins>=l) break;
+                if (how_many_wins>=l) break;
             }
 
             if (how_many_wins>=l){
@@ -103,26 +116,30 @@ public class Play {
         return game_ch;
     }
 
-    List<List<Integer>> train(int n, int m, int l, int k){
-        List<List<Integer>> game_board = new ArrayList<>();
-        List<Integer> row = new ArrayList<>(Arrays.asList(0, 0));
+    ArrayList<ArrayList<Integer>> train(int n, int m, int l, int k){
+        ArrayList<ArrayList<Integer>> game_board = new ArrayList<>();
+        ArrayList<Integer> row = new ArrayList<>();
+        row.add(-1);
+        row.add(-1);
         for (int i=0; i<n; i++) game_board.add(row);
-        List<List<Integer>> strategy = check_game(game_board, 1, m, l, k);
-        return strategy;
+        return check_game(game_board, 1, m, l, k);
     }
 
     public Play(Globals G){
-        List<List<Integer>> strategy = train(G.n, G.m, G.l, G.k);
+        ArrayList<ArrayList<Integer>> strategy, pola_check;
         int index=0;
         Integer[] pola = new Integer[G.n];
         Integer[] tla = new Integer[G.k];
         for (int i=0; i<G.n; i++) pola[i] = -1;
         for (int i=0; i<G.k; i++) tla[i] = inputAuto.nextInt(214)+17;
-        LinkedList<Integer> kolory;
+        ArrayList<Integer> kolory;
         int victor = 0, popped;
 
+        if (G.isGoodAuto) strategy = train(G.n, G.m, G.l, G.k);
+        else strategy = new ArrayList<>();
+
         for (int M=0; M<G.n && victor == 0; M++){
-            kolory = new LinkedList<Integer>();
+            kolory = new ArrayList<>();
             if (G.isDemo){
                 table = fieldTable(pola, tla, G);
                 System.out.println(table);
@@ -137,23 +154,25 @@ public class Play {
                 int out_i = 0, color_index;
                 for (int i=0; i<G.k; i++) {
                     color_index = strategy.get(index).get(i+2);
-                    if (color_index > -1){
+                    if (color_index > -1)
                         if (strategy.get(color_index).get(0)==1){
                             kolory.set(out_i, i);
                             out_i++;
                         }
-                    }
                     if (out_i>G.l) break;
                 }
 
-                List<Integer> notin = new ArrayList<>();
+                ArrayList<Integer> notin = new ArrayList<>();
                 for (int i=0; i<G.k; i++) if (!kolory.contains(i)) notin.add(i);
-                int x=0;
-                for (int i=0; i<notin.size(); i++){
-                    while (kolory.get(x)>-1) x++;
-                    kolory.set(x, notin.get(i));
+                int y=0;
+                Collections.shuffle(notin);
+                for (int x=0; x<kolory.size(); x++){
+                    if (kolory.get(x)==-1) {
+                        kolory.set(x, notin.get(y));
+                        y++;
+                    }
                 }
-                for (int K=0; K<G.l; K++) System.out.print(Integer.toString(kolory.get(K)+1)+" ");
+                for (int K:kolory) System.out.print(Integer.toString(K+1)+" ");
                 System.out.println("");
             }
             else {
@@ -161,8 +180,7 @@ public class Play {
                 field = Integer.parseInt(inputText)-1;
                 do {
                     if (field>=G.n || field<0) valid = false;
-                    else if (pola[field] > -1) valid = false;
-                    else valid = true;
+                    else valid = (pola[field] == -1);
                     if (!valid){
                         System.out.println("Nieprawidlowe pole! Podaj jeszcze raz numer pola");
                         inputText = input.nextLine();
@@ -176,13 +194,11 @@ public class Play {
                 Matcher m = p.matcher(inputText);
                 while (m.find()) kolory.add(Integer.parseInt(m.group())-1);
                 do {
-                    valid = true;
-                    if (kolory.size()!=G.l) valid = false;
-                    for (int K=1; K<kolory.size(); K++)
-                        for (int L=0; L<K; L++)
-                            if (kolory.get(K) == kolory.get(L)) valid = false;
+                    valid = (kolory.size()==G.l);
+                    for (int K=1; K<kolory.size(); K++) for (int L=0; L<K; L++)
+                        if (kolory.get(K).equals(kolory.get(L))) valid = false;
                     if (!valid){
-                        kolory = new LinkedList<Integer>();
+                        kolory = new ArrayList<>();
                         System.out.print("Nieprawidlowe numery! Podaj jeszcze raz kolory");
                         inputText = input.nextLine();
                         m = p.matcher(inputText);
@@ -201,18 +217,27 @@ public class Play {
                 inputNumber = Integer.parseInt(inputText)-1;
                 do {
                     valid = false;
-                    for (int i=0; i<G.l; i++) if (kolory.get(i) == inputNumber) valid = true;
+                    for (int i=0; i<G.l; i++)
+                        if (kolory.get(i) == inputNumber) {
+                            valid = true;
+                            break;
+                        }
                     if (!valid){
-                        System.out.println("Nieprawidlowy numer! Podaj jeszcze raz numer koloru");
+                        System.out.println("Nieprawidłowy numer! Podaj jeszcze raz numer koloru");
                         inputText = input.nextLine();
                         inputNumber = Integer.parseInt(inputText)-1;
                     }
                 } while (!valid);
                 pola[field] = inputNumber;
             }
-            index = strategy.get(index).get(pola[field]+2);
+            if (G.isGoodAuto){
+                index = strategy.get(index).get(pola[field] + 2);
+            }
 
-            if (check_for_arithmetical(pola, G.m)) victor = 1;
+            pola_check = new ArrayList<>();
+            for (int i=0; i<G.n; i++)
+                pola_check.add(new ArrayList<>(Arrays.asList(i, pola[i])));
+            if (check_game_for_arithmetical(pola_check, G.m, G.k)) victor = 1;
         }
 
         table = fieldTable(pola, tla, G);
