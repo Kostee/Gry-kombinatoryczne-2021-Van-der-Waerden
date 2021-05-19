@@ -7,7 +7,7 @@ public class Begin {
     String inputText;
 
     int n, k, m, l;
-    boolean isAuto, isDemo;
+    boolean isGoodAuto, isBadAuto, isDemo;
 
     public Begin() {
         System.out.println("Witaj, epicki graczu!! :D");
@@ -18,18 +18,20 @@ public class Begin {
         setNof('l');
         setIsDemo();
 
-        Main.globals = new Globals(n, k, m, l, isAuto, isDemo);
+        Main.globals = new Globals(n, k, m, l, isGoodAuto, isBadAuto, isDemo);
     }
 
     private void setIsAuto(){
-        System.out.println("Masz kolege z ktorym pragniesz zagrac? Czy moze wolalbys ujrzec symulacje komputerowa?");
-        System.out.println("Wpisz: \"1vs1\" dla rozgrywki z kumplem badz \"comp\" dla przeprowadzenia gry automatycznej");
+        System.out.println("Masz kolegę, z którym pragniesz zagrać? Czy może wolałbyś ujrzeć symulację komputerową?");
+        System.out.println("Wpisz: \"1vs1\" dla rozgrywki z kumplem, \"p1\" dla gry z komputerem jako gracz 1,\n"+
+                " \"p2\" dla gry z komputerem jako gracz 2 lub \"comp\" dla przeprowadzenia gry automatycznej");
         inputText = input.nextLine();
-        while(!inputText.equals("1vs1") & !inputText.equals("comp")){
-            System.out.println("Wpisz jedna z dwoch wartosci: 1vs1, comp");
+        while(!inputText.equals("1vs1") & !inputText.equals("p1") & !inputText.equals("p2") & !inputText.equals("comp")){
+            System.out.println("Wpisz jedną z czterech wartości: 1vs1, p1, p2, comp");
             inputText = input.nextLine();
         }
-        isAuto = inputText.equals("comp");
+        isGoodAuto = inputText.equals("comp") | inputText.equals("p2");
+        isBadAuto = inputText.equals("comp") | inputText.equals("p1");
     }
 
     private void setNof(char w){
@@ -39,21 +41,21 @@ public class Begin {
 
         switch (w) {
             case 'n':
-                whichInput = "pol (pozycji do zakolorowania)";
+                whichInput = "pól (pozycji do zakolorowania)";
                 break;
             case 'k':
-                whichInput = "kolorow dostepnych w grze";
+                whichInput = "kolorów dostępnych w grze";
                 break;
             case 'm':
-                whichInput = "pol w ciagu arytmetycznym o tej samej barwie, ku zwyciestwu gracza pierwszego (nie bialej)";
+                whichInput = "pól w ciągu arytmetycznym o tej samej barwie, ku zwycięstwu gracza pierwszego (nie białej)";
                 break;
             default: // case 'l':
-                whichInput = "kolorow dostepnych do kolorowania przez gracza drugiego w kazdej turze";
+                whichInput = "kolorów dostępnych do kolorowania przez gracza drugiego w każdej turze";
                 break;
         }
 
         while(!shouldBreak) {
-            System.out.print("Wpisz prosze, ile w grze ma byc ");
+            System.out.print("Wpisz proszę, ile w grze ma być ");
             System.out.println(whichInput);
 
             inputText = input.nextLine();
@@ -82,7 +84,7 @@ public class Begin {
                             notNaturalError();
                         else {
                             if (inputNumber > n / 2)
-                                System.out.println("Liczba jest zbyt duza!! Gra niemozliwa do wygrania przez gracza drugiego.");
+                                System.out.println("Liczba jest zbyt duża!! Gra niemożliwa do wygrania przez gracza drugiego.");
                             else {
                                 m = inputNumber;
                                 shouldBreak = true;
@@ -99,7 +101,7 @@ public class Begin {
                             notNaturalError();
                         else {
                             if (inputNumber > k)
-                                System.out.println("Liczba jest zbyt duża!!Nie ma tyle kolorów w grze.");
+                                System.out.println("Liczba jest zbyt duża!! Nie ma tyle kolorów w grze.");
                             else {
                                 l = inputNumber;
                                 shouldBreak = true;
@@ -115,12 +117,12 @@ public class Begin {
     }
 
     private void setIsDemo(){
-        System.out.println("No dobrze, ale czy masz czas i serce do ogladania calej rozgrywki?");
+        System.out.println("No dobrze, ale czy masz czas i serce do oglądania całej rozgrywki?");
         System.out.println("Jeśli tak - spróbuj trybu \"demo\"! W przeciwnym wypadku doskonały dla Ciebie będzie \"test\" :)");
         System.out.println("Wpisz: \"demo\" lub \"test\"");
         inputText = input.nextLine();
         while(!inputText.equals("demo") & !inputText.equals("test")){
-            System.out.println("Wpisz jedna z dwoch wartosci: demo, test");
+            System.out.println("Wpisz jedną z dwóch wartości: demo, test");
             inputText = input.nextLine();
         }
         isDemo = inputText.equals("demo");

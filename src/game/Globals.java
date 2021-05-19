@@ -5,15 +5,17 @@ public class Globals {
     int k;
     int m;
     int l;
-    boolean isAuto;
+    boolean isGoodAuto;
+    boolean isBadAuto;
     boolean isDemo;
 
-    public Globals(int n, int k, int m, int l, boolean isAuto, boolean isDemo) {
+    public Globals(int n, int k, int m, int l, boolean isGoodAuto, boolean isBadAuto, boolean isDemo) {
         this.n = n;
         this.k = k;
         this.m = m;
         this.l = l;
-        this.isAuto = isAuto;
+        this.isGoodAuto = isGoodAuto;
+        this.isBadAuto = isBadAuto;
         this.isDemo = isDemo;
     }
 
@@ -24,7 +26,8 @@ public class Globals {
                 ", k=" + k +
                 ", m=" + m +
                 ", l=" + l +
-                ", isAuto=" + isAuto +
+                ", isGoodAuto=" + isGoodAuto +
+                ", isBadAuto=" + isBadAuto +
                 ", isDemo=" + isDemo +
                 '}';
     }
