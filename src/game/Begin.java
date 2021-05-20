@@ -24,7 +24,7 @@ public class Begin {
     private void setIsAuto(){
         System.out.println("Masz kolegę, z którym pragniesz zagrać? Czy może wolałbyś ujrzeć symulację komputerową?");
         System.out.println("Wpisz: \"1vs1\" dla rozgrywki z kumplem, \"p1\" dla gry z komputerem jako gracz 1,\n"+
-                " \"p2\" dla gry z komputerem jako gracz 2 lub \"comp\" dla przeprowadzenia gry automatycznej");
+                "\"p2\" dla gry z komputerem jako gracz 2 lub \"comp\" dla przeprowadzenia gry automatycznej");
         inputText = input.nextLine();
         while(!inputText.equals("1vs1") & !inputText.equals("p1") & !inputText.equals("p2") & !inputText.equals("comp")){
             System.out.println("Wpisz jedną z czterech wartości: 1vs1, p1, p2, comp");

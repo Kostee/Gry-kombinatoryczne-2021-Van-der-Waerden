@@ -209,7 +209,46 @@ public class Play {
 
             System.out.println("Graczu 2, podaj numer koloru");
             if (G.isBadAuto){
-                pola[field] = kolory.get(inputAuto.nextInt(G.l));
+                Integer[] seq = new Integer[G.m];
+                Integer[] seq_total = new Integer[G.l];
+                Integer[] seq_long = new Integer[G.l];
+                for (int i=0; i<G.l; i++) {
+                    seq_total[i] = 0;
+                    seq_long[i] = 1;
+                }
+                double Sm = G.n/(G.m-1.0);
+                boolean valid;
+                int seq_len;
+                for (int S=1; S<Sm; S++)
+                    for (int i=0; i+(G.m-1)*S<G.n; i++) if (i<=field && field<=i+(G.m-1)*S && (field-i)%S==0){
+                        for (int x=0; x<G.m; x++)  seq[x] = pola[i+x*S];
+                        for (int c=0; c<kolory.size(); c++){
+                            valid = true;
+                            seq_len = 1;
+                            for (int x=0; x<G.m; x++){
+                                if (seq[x]==kolory.get(c)) seq_len++;
+                                else if (seq[x]!=-1) valid = false;
+                            }
+                            if (!valid) continue;
+                            if (seq_len>seq_long[c]) seq_long[c] = seq_len;
+                            seq_total[c]++;
+                        }
+                    }
+                ArrayList<Integer> candid1 = new ArrayList<>(), candid2 = new ArrayList<>();
+                ArrayList<Integer> seq_sort = new ArrayList<>(Arrays.asList(seq_long));
+                int seq_least = Collections.min(seq_sort);
+                for (int i=0; i<G.l; i++) if (seq_sort.get(i)==seq_least) candid1.add(i);
+
+                seq_sort = new ArrayList<>();
+                for (int i=0; i<G.l; i++) {
+                    if (candid1.contains(i)) seq_sort.add(seq_total[i]);
+                    else seq_sort.add(Integer.MAX_VALUE);
+                }
+                seq_least = Collections.min(seq_sort);
+                for (int i=0; i<seq_sort.size(); i++) if (seq_sort.get(i)==seq_least) candid2.add(i);
+
+                Collections.shuffle(candid2);
+                pola[field] = kolory.get(candid2.get(0));
                 System.out.println(pola[field]+1);
             }
             else {
