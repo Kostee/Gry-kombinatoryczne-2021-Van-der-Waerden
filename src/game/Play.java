@@ -49,9 +49,13 @@ public class Play {
 
     String fieldTable(Integer[] pola, Integer[] tla, Globals G){
         table="";
+        String fore;
         for (int i=0; i<G.n; i++){
             if (pola[i] == -1) table += "[ ]";
-            else table += "[\033["+Integer.toString(tla[pola[i]])+"m\033[90m"+Integer.toString(pola[i]+1)+"\033[0m]";
+            else {
+                fore = (tla[pola[i]]-16)%36<18?"231":"16";
+                table += "[\033[38;5;"+fore+";48;5;"+Integer.toString(tla[pola[i]])+"m"+Integer.toString(pola[i]+1)+"\033[0m]";
+            }
         }
         return table;
     }
@@ -127,10 +131,7 @@ public class Play {
         Integer[] pola = new Integer[G.n];
         Integer[] tla = new Integer[G.k];
         for (int i=0; i<G.n; i++) pola[i] = -1;
-        for (int i=0; i<G.k; i++) {
-            tla[i] = inputAuto.nextInt(14)+41;
-            if (tla[i]>47) tla[i]+=52;
-        }
+        for (int i=0; i<G.k; i++) tla[i] = inputAuto.nextInt(214)+17;
         ArrayList<Integer> kolory;
         int victor = 0, popped;
 
