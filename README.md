@@ -6,7 +6,5 @@ Zespół w składzie:
 3. Mikołaj Malec
 
 Jak uruchomić?
-
-cd <ścieżka do folderu głównego>
-
-jara -jar VanderWaerden.jar
+- cd <ścieżka do folderu głównego>
+- jara -jar VanderWaerden.jar
