@@ -5,18 +5,20 @@ public class Globals {
     int k;
     int m;
     int l;
-    boolean isGoodAuto;
-    boolean isBadAuto;
+    int good;
+    int bad;
     boolean isDemo;
+    int games;
 
-    public Globals(int n, int k, int m, int l, boolean isGoodAuto, boolean isBadAuto, boolean isDemo) {
+    public Globals(int n, int k, int m, int l, int good, int bad, boolean isDemo, int games) {
         this.n = n;
         this.k = k;
         this.m = m;
         this.l = l;
-        this.isGoodAuto = isGoodAuto;
-        this.isBadAuto = isBadAuto;
+        this.good = good;
+        this.bad = bad;
         this.isDemo = isDemo;
+        this.games = games;
     }
 
     @Override
@@ -26,9 +28,10 @@ public class Globals {
                 ", k=" + k +
                 ", m=" + m +
                 ", l=" + l +
-                ", isGoodAuto=" + isGoodAuto +
-                ", isBadAuto=" + isBadAuto +
+                ", good=" + good +
+                ", bad=" + bad +
                 ", isDemo=" + isDemo +
+                ", games=" + games +
                 '}';
     }
 }

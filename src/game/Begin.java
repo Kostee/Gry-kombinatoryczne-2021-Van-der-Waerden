@@ -4,10 +4,10 @@ import java.util.Scanner;
 
 public class Begin {
     Scanner input = new Scanner(System.in);
-    String inputText;
+    String inputText, inputText2;
 
-    int n, k, m, l;
-    boolean isGoodAuto, isBadAuto, isDemo;
+    int n, k, m, l, good, bad, games;
+    boolean isDemo;
 
     public Begin() {
         System.out.println("Witaj, epicki graczu!! :D");
@@ -18,7 +18,7 @@ public class Begin {
         setNof('l');
         setIsDemo();
 
-        Main.globals = new Globals(n, k, m, l, isGoodAuto, isBadAuto, isDemo);
+        Main.globals = new Globals(n, k, m, l, good, bad, isDemo, games);
     }
 
     private void setIsAuto(){
@@ -30,8 +30,28 @@ public class Begin {
             System.out.println("Wpisz jedną z czterech wartości: 1vs1, p1, p2, comp");
             inputText = input.nextLine();
         }
-        isGoodAuto = inputText.equals("comp") | inputText.equals("p2");
-        isBadAuto = inputText.equals("comp") | inputText.equals("p1");
+        if (inputText.equals("comp") | inputText.equals("p2")){
+            System.out.println("Wpisz poziom gracza pierwszego: \"weak\" lub \"strong\"");
+            inputText2 = input.nextLine();
+            while (!inputText2.equals("weak") & !inputText2.equals("strong")){
+                System.out.println("Wpisz jedną z dwóch wartości: weak, strong");
+                inputText2 = input.nextLine();
+            }
+            if (inputText2.equals("weak")) good = 1;
+            else good = 2;
+        }
+        else good = 0;
+        if (inputText.equals("comp") | inputText.equals("p1")){
+            System.out.println("Wpisz poziom gracza drugiego: \"weak\" lub \"strong\"");
+            inputText2 = input.nextLine();
+            while (!inputText2.equals("weak") & !inputText2.equals("strong")){
+                System.out.println("Wpisz jedną z dwóch wartości: weak, strong");
+                inputText2 = input.nextLine();
+            }
+            if (inputText2.equals("weak")) bad = 1;
+            else bad = 2;
+        }
+        else bad = 0;
     }
 
     private void setNof(char w){
@@ -126,6 +146,22 @@ public class Begin {
             inputText = input.nextLine();
         }
         isDemo = inputText.equals("demo");
+        
+        if (isDemo) games=1;
+        else {
+            System.out.println("Ile gier chcesz rozegrać?");
+            try {
+                inputText = input.nextLine();
+                int inputNumber = Integer.parseInt(inputText);
+                if (inputNumber < 1)
+                    System.out.println("Za mała liczba! Musisz wprowadzić wartość co najmniej 1.");
+                else {
+                    games = inputNumber;
+                }
+            } catch (NumberFormatException e) {
+                notNaturalError();
+            }
+        }
     }
 
     private void notNaturalError(){

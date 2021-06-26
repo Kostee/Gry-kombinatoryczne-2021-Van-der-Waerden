@@ -11,6 +11,7 @@ public class Play {
     String table;
     int field;
     int inputNumber;
+    int count=0;
     boolean valid;
 
     boolean check_for_arithmetical(ArrayList<Integer> pola, int m){
@@ -127,161 +128,190 @@ public class Play {
 
     public Play(Globals G){
         ArrayList<ArrayList<Integer>> strategy, pola_check;
-        int index=0;
+        int index, victor;
         Integer[] pola = new Integer[G.n];
         Integer[] tla = new Integer[G.k];
-        for (int i=0; i<G.n; i++) pola[i] = -1;
-        for (int i=0; i<G.k; i++) tla[i] = inputAuto.nextInt(214)+17;
         ArrayList<Integer> kolory;
-        int victor = 0, popped;
+        boolean inform = G.isDemo || G.good==0 || G.bad==0;
 
-        if (G.isGoodAuto) strategy = train(G.n, G.m, G.l, G.k);
-        else strategy = new ArrayList<>();
+        for (int game=0; game<G.games; game++){
+            index=0;
+            victor=0;
+            for (int i=0; i<G.n; i++) pola[i] = -1;
+            for (int i=0; i<G.k; i++) tla[i] = inputAuto.nextInt(214)+17;
+            if (G.good==2) strategy = train(G.n, G.m, G.l, G.k);
+            else strategy = new ArrayList<>();
 
-        for (int M=0; M<G.n && victor == 0; M++){
-            kolory = new ArrayList<>();
-            if (G.isDemo){
+            if (!G.isDemo && (G.good==0 || G.bad==0)) System.out.println("GRA "+Integer.toString(game+1)+" Z "+Integer.toString(G.games));
+            for (int M=0; M<G.n && victor == 0; M++){
+                kolory = new ArrayList<>();
+                if (inform){
+                    table = fieldTable(pola, tla, G);
+                    System.out.println(table);
+                }
+                if (inform) System.out.println("Graczu 1, podaj numer pola");
+                if (G.good==2) {
+                    field = strategy.get(index).get(1);
+                    if (inform) System.out.println(field+1);
+
+                    if (inform) System.out.println("Podaj kolory");
+                    for (int K=0; K<G.l; K++) kolory.add(-1);
+                    int out_i = 0, color_index;
+                    for (int i=0; i<G.k; i++) {
+                        color_index = strategy.get(index).get(i+2);
+                        if (color_index > -1)
+                            if (strategy.get(color_index).get(0)==1){
+                                kolory.set(out_i, i);
+                                out_i++;
+                            }
+                        if (out_i>G.l) break;
+                    }
+
+                    ArrayList<Integer> notin = new ArrayList<>();
+                    for (int i=0; i<G.k; i++) if (!kolory.contains(i)) notin.add(i);
+                    int y=0;
+                    Collections.shuffle(notin);
+                    for (int x=0; x<kolory.size(); x++){
+                        if (kolory.get(x)==-1) {
+                            kolory.set(x, notin.get(y));
+                            y++;
+                        }
+                    }
+                    if (inform) {
+                        for (int K:kolory) System.out.print(Integer.toString(K+1)+" ");
+                        System.out.println("");
+                    }
+                }
+                else if (G.good==1){
+                    field = inputAuto.nextInt(G.n);
+                    while (pola[field] > -1) field = inputAuto.nextInt(G.n);
+                    if (inform) System.out.println(field+1);
+
+                    if (inform) System.out.println("Podaj kolory");
+                    for (int K=0; K<G.k; K++) kolory.add(K);
+                    Collections.shuffle(kolory);
+                    for (int K=0; K<G.k-G.l; K++) kolory.remove(0);
+                    if (inform) {
+                        for (int K = 0; K < G.l; K++) System.out.print(Integer.toString(kolory.get(K) + 1) + " ");
+                        System.out.println("");
+                    }
+                }
+                else {
+                    inputText = input.nextLine();
+                    field = Integer.parseInt(inputText)-1;
+                    do {
+                        if (field>=G.n || field<0) valid = false;
+                        else valid = (pola[field] == -1);
+                        if (!valid){
+                            System.out.println("Nieprawidlowe pole! Podaj jeszcze raz numer pola");
+                            inputText = input.nextLine();
+                            field = Integer.parseInt(inputText)-1;
+                        }
+                    } while (!valid);
+
+                    System.out.println("Podaj kolory");
+                    inputText = input.nextLine();
+                    Pattern p = Pattern.compile("\\d+");
+                    Matcher m = p.matcher(inputText);
+                    while (m.find()) kolory.add(Integer.parseInt(m.group())-1);
+                    do {
+                        valid = (kolory.size()==G.l);
+                        for (int K=1; K<kolory.size(); K++) for (int L=0; L<K; L++)
+                            if (kolory.get(K).equals(kolory.get(L))) valid = false;
+                        if (!valid){
+                            kolory = new ArrayList<>();
+                            System.out.print("Nieprawidlowe numery! Podaj jeszcze raz kolory");
+                            inputText = input.nextLine();
+                            m = p.matcher(inputText);
+                            while (m.find()) kolory.add(Integer.parseInt(m.group()));
+                        }
+                    } while (!valid);
+                }
+
+                if (inform) System.out.println("Graczu 2, podaj numer koloru");
+                if (G.bad==2){
+                    Integer[] seq = new Integer[G.m];
+                    Integer[] seq_total = new Integer[G.l];
+                    Integer[] seq_long = new Integer[G.l];
+                    for (int i=0; i<G.l; i++) {
+                        seq_total[i] = 0;
+                        seq_long[i] = 1;
+                    }
+                    double Sm = G.n/(G.m-1.0);
+                    boolean valid;
+                    int seq_len;
+                    for (int S=1; S<Sm; S++)
+                        for (int i=0; i+(G.m-1)*S<G.n; i++) if (i<=field && field<=i+(G.m-1)*S && (field-i)%S==0){
+                            for (int x=0; x<G.m; x++)  seq[x] = pola[i+x*S];
+                            for (int c=0; c<kolory.size(); c++){
+                                valid = true;
+                                seq_len = 1;
+                                for (int x=0; x<G.m; x++){
+                                    if (seq[x]==kolory.get(c)) seq_len++;
+                                    else if (seq[x]!=-1) valid = false;
+                                }
+                                if (!valid) continue;
+                                if (seq_len>seq_long[c]) seq_long[c] = seq_len;
+                                seq_total[c]++;
+                            }
+                        }
+                    ArrayList<Integer> candid1 = new ArrayList<>(), candid2 = new ArrayList<>();
+                    ArrayList<Integer> seq_sort = new ArrayList<>(Arrays.asList(seq_long));
+                    int seq_least = Collections.min(seq_sort);
+                    for (int i=0; i<G.l; i++) if (seq_sort.get(i)==seq_least) candid1.add(i);
+
+                    seq_sort = new ArrayList<>();
+                    for (int i=0; i<G.l; i++) {
+                        if (candid1.contains(i)) seq_sort.add(seq_total[i]);
+                        else seq_sort.add(Integer.MAX_VALUE);
+                    }
+                    seq_least = Collections.min(seq_sort);
+                    for (int i=0; i<seq_sort.size(); i++) if (seq_sort.get(i)==seq_least) candid2.add(i);
+
+                    Collections.shuffle(candid2);
+                    pola[field] = kolory.get(candid2.get(0));
+                    if (inform) System.out.println(pola[field]+1);
+                }
+                else if (G.bad==1){
+                    pola[field] = kolory.get(inputAuto.nextInt(G.l));
+                    if (inform) System.out.println(pola[field]+1);
+                }
+                else {
+                    inputText = input.nextLine();
+                    inputNumber = Integer.parseInt(inputText)-1;
+                    do {
+                        valid = false;
+                        for (int i=0; i<G.l; i++)
+                            if (kolory.get(i) == inputNumber) {
+                                valid = true;
+                                break;
+                            }
+                        if (!valid){
+                            System.out.println("Nieprawidłowy numer! Podaj jeszcze raz numer koloru");
+                            inputText = input.nextLine();
+                            inputNumber = Integer.parseInt(inputText)-1;
+                        }
+                    } while (!valid);
+                    pola[field] = inputNumber;
+                }
+                if (G.good==2) index = strategy.get(index).get(pola[field] + 2);
+
+                pola_check = new ArrayList<>();
+                for (int i=0; i<G.n; i++)
+                    pola_check.add(new ArrayList<>(Arrays.asList(i, pola[i])));
+                if (check_game_for_arithmetical(pola_check, G.m, G.k)) victor = 1;
+            }
+
+            if (inform){
                 table = fieldTable(pola, tla, G);
                 System.out.println(table);
-            }
-            System.out.println("Graczu 1, podaj numer pola");
-            if (G.isGoodAuto) {
-                field = strategy.get(index).get(1);
-                System.out.println(field+1);
-
-                System.out.println("Podaj kolory");
-                for (int K=0; K<G.l; K++) kolory.add(-1);
-                int out_i = 0, color_index;
-                for (int i=0; i<G.k; i++) {
-                    color_index = strategy.get(index).get(i+2);
-                    if (color_index > -1)
-                        if (strategy.get(color_index).get(0)==1){
-                            kolory.set(out_i, i);
-                            out_i++;
-                        }
-                    if (out_i>G.l) break;
-                }
-
-                ArrayList<Integer> notin = new ArrayList<>();
-                for (int i=0; i<G.k; i++) if (!kolory.contains(i)) notin.add(i);
-                int y=0;
-                Collections.shuffle(notin);
-                for (int x=0; x<kolory.size(); x++){
-                    if (kolory.get(x)==-1) {
-                        kolory.set(x, notin.get(y));
-                        y++;
-                    }
-                }
-                for (int K:kolory) System.out.print(Integer.toString(K+1)+" ");
-                System.out.println("");
-            }
-            else {
-                inputText = input.nextLine();
-                field = Integer.parseInt(inputText)-1;
-                do {
-                    if (field>=G.n || field<0) valid = false;
-                    else valid = (pola[field] == -1);
-                    if (!valid){
-                        System.out.println("Nieprawidlowe pole! Podaj jeszcze raz numer pola");
-                        inputText = input.nextLine();
-                        field = Integer.parseInt(inputText)-1;
-                    }
-                } while (!valid);
-
-                System.out.println("Podaj kolory");
-                inputText = input.nextLine();
-                Pattern p = Pattern.compile("\\d+");
-                Matcher m = p.matcher(inputText);
-                while (m.find()) kolory.add(Integer.parseInt(m.group())-1);
-                do {
-                    valid = (kolory.size()==G.l);
-                    for (int K=1; K<kolory.size(); K++) for (int L=0; L<K; L++)
-                        if (kolory.get(K).equals(kolory.get(L))) valid = false;
-                    if (!valid){
-                        kolory = new ArrayList<>();
-                        System.out.print("Nieprawidlowe numery! Podaj jeszcze raz kolory");
-                        inputText = input.nextLine();
-                        m = p.matcher(inputText);
-                        while (m.find()) kolory.add(Integer.parseInt(m.group()));
-                    }
-                } while (!valid);
+                if (victor==1) System.out.println("Gracz 1 wygrywa!");
+                else System.out.println("Gracz 2 wygrywa!");
             }
 
-            System.out.println("Graczu 2, podaj numer koloru");
-            if (G.isBadAuto){
-                Integer[] seq = new Integer[G.m];
-                Integer[] seq_total = new Integer[G.l];
-                Integer[] seq_long = new Integer[G.l];
-                for (int i=0; i<G.l; i++) {
-                    seq_total[i] = 0;
-                    seq_long[i] = 1;
-                }
-                double Sm = G.n/(G.m-1.0);
-                boolean valid;
-                int seq_len;
-                for (int S=1; S<Sm; S++)
-                    for (int i=0; i+(G.m-1)*S<G.n; i++) if (i<=field && field<=i+(G.m-1)*S && (field-i)%S==0){
-                        for (int x=0; x<G.m; x++)  seq[x] = pola[i+x*S];
-                        for (int c=0; c<kolory.size(); c++){
-                            valid = true;
-                            seq_len = 1;
-                            for (int x=0; x<G.m; x++){
-                                if (seq[x]==kolory.get(c)) seq_len++;
-                                else if (seq[x]!=-1) valid = false;
-                            }
-                            if (!valid) continue;
-                            if (seq_len>seq_long[c]) seq_long[c] = seq_len;
-                            seq_total[c]++;
-                        }
-                    }
-                ArrayList<Integer> candid1 = new ArrayList<>(), candid2 = new ArrayList<>();
-                ArrayList<Integer> seq_sort = new ArrayList<>(Arrays.asList(seq_long));
-                int seq_least = Collections.min(seq_sort);
-                for (int i=0; i<G.l; i++) if (seq_sort.get(i)==seq_least) candid1.add(i);
-
-                seq_sort = new ArrayList<>();
-                for (int i=0; i<G.l; i++) {
-                    if (candid1.contains(i)) seq_sort.add(seq_total[i]);
-                    else seq_sort.add(Integer.MAX_VALUE);
-                }
-                seq_least = Collections.min(seq_sort);
-                for (int i=0; i<seq_sort.size(); i++) if (seq_sort.get(i)==seq_least) candid2.add(i);
-
-                Collections.shuffle(candid2);
-                pola[field] = kolory.get(candid2.get(0));
-                System.out.println(pola[field]+1);
-            }
-            else {
-                inputText = input.nextLine();
-                inputNumber = Integer.parseInt(inputText)-1;
-                do {
-                    valid = false;
-                    for (int i=0; i<G.l; i++)
-                        if (kolory.get(i) == inputNumber) {
-                            valid = true;
-                            break;
-                        }
-                    if (!valid){
-                        System.out.println("Nieprawidłowy numer! Podaj jeszcze raz numer koloru");
-                        inputText = input.nextLine();
-                        inputNumber = Integer.parseInt(inputText)-1;
-                    }
-                } while (!valid);
-                pola[field] = inputNumber;
-            }
-            if (G.isGoodAuto){
-                index = strategy.get(index).get(pola[field] + 2);
-            }
-
-            pola_check = new ArrayList<>();
-            for (int i=0; i<G.n; i++)
-                pola_check.add(new ArrayList<>(Arrays.asList(i, pola[i])));
-            if (check_game_for_arithmetical(pola_check, G.m, G.k)) victor = 1;
+            count+=victor;
         }
-
-        table = fieldTable(pola, tla, G);
-        System.out.println(table);
-        if (victor==1) System.out.println("Gracz 1 wygrywa!");
-        else System.out.println("Gracz 2 wygrywa!");
+        if (!G.isDemo)
+            System.out.println("WYNIKI\nGracz 1: "+Integer.toString(count)+"\nGracz 2: "+Integer.toString(G.games-count));
     }
 }
