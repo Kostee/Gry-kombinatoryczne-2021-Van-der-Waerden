@@ -7,4 +7,4 @@ Zespół w składzie:
 
 Jak uruchomić?
 - cd <ścieżka do folderu głównego>
-- jara -jar VanderWaerden.jar
+- java -jar VanderWaerden.jar
