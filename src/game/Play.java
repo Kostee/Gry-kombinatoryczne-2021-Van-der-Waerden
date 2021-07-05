@@ -61,6 +61,35 @@ public class Play {
         return table;
     }
 
+    String victoryLookup(Integer[] pola, Globals G){
+        table="";
+        ArrayList<Integer> arithmetical = new ArrayList<>();
+        int Sm = G.n/(G.m-1);
+        int kol;
+        boolean won = false;
+        for (int S=1; S<Sm; S++) {
+            for (int i=0; i+(G.m-1)*S<G.n; i++)
+                if (pola[i] > -1) {
+                    valid = true;
+                    kol = pola[i];
+                    for (int x=0; x<G.m; x++) if (pola[i+x*S]!=kol) valid = false;
+                    if (valid) {
+                        won = true;
+                        for (int x=0; x<G.m; x++) arithmetical.add(i+x*S);
+                        break;
+                    }
+                }
+            if (won) break;
+        }
+        for (int i=0; i<G.n; i++){
+            if (pola[i] == -1) table += "[ ]";
+            else if (arithmetical.contains(i))
+                table += "[\033[38;5;196;48;5;226m"+Integer.toString(pola[i]+1)+"\033[0m]";
+            else table += "["+Integer.toString(pola[i]+1)+"]";
+        }
+        return table;
+    }
+
     ArrayList<ArrayList<Integer>> check_game(ArrayList<ArrayList<Integer>> game_board,
                                              int move, int m, int l, int k){
         ArrayList<ArrayList<Integer>> out_list = new ArrayList<>(),
@@ -305,7 +334,10 @@ public class Play {
             if (inform){
                 table = fieldTable(pola, tla, G);
                 System.out.println(table);
-                if (victor==1) System.out.println("Gracz 1 wygrywa!");
+                if (victor==1) {
+                    System.out.println("Gracz 1 wygrywa!");
+                    if (G.isDemo) System.out.println(victoryLookup(pola, G));
+                }
                 else System.out.println("Gracz 2 wygrywa!");
             }
 
